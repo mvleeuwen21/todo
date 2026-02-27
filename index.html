@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Noted — Notes &amp; Tasks</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app" id="app">
+
+    <!-- ═══════════════════════════════════════
+         SIDEBAR — Navigation, search, labels
+         ═══════════════════════════════════════ -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <span class="logo-icon">✦</span>
+        <span class="logo-text">Noted</span>
+      </div>
+
+      <!-- Search bar -->
+      <div class="search-wrapper">
+        <span class="search-icon">⌕</span>
+        <input type="text" class="search-input" id="search-input" placeholder="Search notes and tasks…" autocomplete="off">
+      </div>
+
+      <!-- Primary navigation -->
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <ul class="nav-list">
+            <li class="nav-item" data-view="notes">
+              <span class="nav-icon">📝</span>All Notes
+            </li>
+            <li class="nav-item" data-view="tasks">
+              <span class="nav-icon">✓</span>Tasks
+            </li>
+            <li class="nav-item" data-view="daily">
+              <span class="nav-icon">📅</span>Daily Notes
+            </li>
+          </ul>
+        </div>
+
+        <!-- Labels section -->
+        <div class="nav-section">
+          <div class="nav-section-header">Labels</div>
+          <ul class="nav-list" id="labels-nav">
+            <li class="nav-empty-hint">No labels yet</li>
+          </ul>
+        </div>
+
+        <!-- Tags section -->
+        <div class="nav-section">
+          <div class="nav-section-header">Tags</div>
+          <ul class="nav-list" id="tags-nav">
+            <li class="nav-empty-hint">No tags yet</li>
+          </ul>
+        </div>
+      </nav>
+
+      <!-- New note / task buttons -->
+      <div class="sidebar-footer">
+        <button class="btn-new" id="btn-new-note">
+          <span class="btn-new-icon">+</span> New Note
+        </button>
+        <button class="btn-new btn-new-secondary" id="btn-new-task">
+          <span class="btn-new-icon">✓</span> New Task
+        </button>
+        <p class="shortcut-hint">
+          <kbd>Ctrl+D</kbd> for today's note
+        </p>
+      </div>
+    </aside>
+
+    <!-- ═══════════════════════════════════════
+         LIST PANEL — Filtered note/task list
+         ═══════════════════════════════════════ -->
+    <div class="list-panel" id="list-panel">
+      <div class="list-panel-header">
+        <div class="list-panel-title-row">
+          <h2 class="list-panel-title" id="list-panel-title">All Notes</h2>
+          <div id="sort-wrapper">
+            <select id="sort-select" title="Sort order">
+              <option value="updated">Recent</option>
+              <option value="created">Created</option>
+              <option value="title">A–Z</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Task-specific filters (hidden in notes view) -->
+        <div class="task-filters" id="task-filters" style="display:none">
+          <select id="filter-status" title="Filter by status">
+            <option value="all">All status</option>
+            <option value="todo">To Do</option>
+            <option value="in-progress">In Progress</option>
+            <option value="done">Done</option>
+          </select>
+          <select id="filter-priority" title="Filter by priority">
+            <option value="all">All priority</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+            <option value="none">No priority</option>
+          </select>
+          <input type="date" id="filter-due-date" title="Filter by due date">
+        </div>
+      </div>
+
+      <!-- Scrollable list of notes / tasks -->
+      <div class="note-list" id="note-list"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         EDITOR PANEL — Note / task editor
+         ═══════════════════════════════════════ -->
+    <div class="editor-panel" id="editor-panel">
+
+      <!-- Shown when no note is open -->
+      <div class="editor-placeholder" id="editor-placeholder">
+        <div class="placeholder-content">
+          <span class="placeholder-icon">✦</span>
+          <p>Select a note to open it, or create a new one.</p>
+          <p class="placeholder-hint">
+            Press <kbd>Ctrl+D</kbd> / <kbd>Cmd+D</kbd> to open today's daily note.
+          </p>
+        </div>
+      </div>
+
+      <!-- Shown when a note is open -->
+      <div class="editor-main" id="editor-main" style="display:none">
+
+        <!-- Formatting toolbar -->
+        <div class="editor-toolbar" id="editor-toolbar">
+          <div class="toolbar-group">
+            <button class="toolbar-btn" data-cmd="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+            <button class="toolbar-btn" data-cmd="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+            <button class="toolbar-btn" data-cmd="underline" title="Underline (Ctrl+U)"><u>U</u></button>
+            <button class="toolbar-btn" data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>
+          </div>
+          <div class="toolbar-sep"></div>
+          <div class="toolbar-group">
+            <button class="toolbar-btn" data-cmd="formatBlock" data-val="h1" title="Heading 1">H1</button>
+            <button class="toolbar-btn" data-cmd="formatBlock" data-val="h2" title="Heading 2">H2</button>
+            <button class="toolbar-btn" data-cmd="formatBlock" data-val="h3" title="Heading 3">H3</button>
+            <button class="toolbar-btn" data-cmd="formatBlock" data-val="p" title="Paragraph">¶</button>
+          </div>
+          <div class="toolbar-sep"></div>
+          <div class="toolbar-group">
+            <button class="toolbar-btn" data-cmd="insertUnorderedList" title="Bullet list">• List</button>
+            <button class="toolbar-btn" data-cmd="insertOrderedList" title="Numbered list">1. List</button>
+            <button class="toolbar-btn" data-cmd="formatBlock" data-val="blockquote" title="Blockquote">❝</button>
+            <button class="toolbar-btn" data-cmd="formatBlock" data-val="pre" title="Code block">{ }</button>
+          </div>
+          <div class="toolbar-sep"></div>
+          <div class="toolbar-group toolbar-actions">
+            <button class="btn-action" id="btn-convert-task" title="Convert this note to a task">Convert to Task</button>
+            <button class="btn-action btn-danger" id="btn-delete-note" title="Delete this note">Delete</button>
+          </div>
+        </div>
+
+        <!-- Note title -->
+        <div class="note-title-wrapper">
+          <input
+            type="text"
+            class="note-title-input"
+            id="note-title"
+            placeholder="Untitled"
+            autocomplete="off"
+          >
+        </div>
+
+        <!-- Task fields — visible only when note is a task -->
+        <div class="task-fields" id="task-fields" style="display:none">
+          <label class="task-field-label">
+            Due date
+            <input type="date" id="task-due-date">
+          </label>
+          <label class="task-field-label">
+            Priority
+            <select id="task-priority">
+              <option value="none">None</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </label>
+          <label class="task-field-label">
+            Status
+            <select id="task-status">
+              <option value="todo">To Do</option>
+              <option value="in-progress">In Progress</option>
+              <option value="done">Done</option>
+            </select>
+          </label>
+        </div>
+
+        <!-- Labels & tags row -->
+        <div class="meta-row" id="meta-row">
+          <div class="meta-item">
+            <span class="meta-label">Labels:</span>
+            <div class="chips-input-wrapper">
+              <div class="chips-display" id="labels-display"></div>
+              <input
+                type="text"
+                class="chips-input"
+                id="labels-input"
+                placeholder="Add label… (Enter)"
+                autocomplete="off"
+              >
+            </div>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Tags:</span>
+            <div class="chips-input-wrapper">
+              <div class="chips-display" id="tags-display"></div>
+              <input
+                type="text"
+                class="chips-input"
+                id="tags-input"
+                placeholder="Add tag… (Enter)"
+                autocomplete="off"
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Rich text editor body -->
+        <div class="editor-body-wrapper">
+          <div
+            class="editor-body"
+            id="editor-body"
+            contenteditable="true"
+            data-placeholder="Write your note here…  Use [[Note Title]] to link to another note."
+          ></div>
+        </div>
+
+        <!-- Backlinks — shown when other notes link to this one -->
+        <div class="backlinks-section" id="backlinks-section" style="display:none">
+          <div class="backlinks-header">
+            <span class="backlinks-icon">←</span> Backlinks
+          </div>
+          <div class="backlinks-list" id="backlinks-list"></div>
+        </div>
+
+      </div><!-- /editor-main -->
+    </div><!-- /editor-panel -->
+
+  </div><!-- /app -->
+
+  <!-- Load modules then boot the app -->
+  <script src="js/store.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
